@@ -32,7 +32,7 @@ After following these instructions, you would have a horizontal position of 15 a
 Calculate the horizontal position and depth you would have after following the planned course. What do you get if you multiply your final horizontal position by your final depth?
 */
 
-static readonly string[] lines = System.IO.File.ReadAllLines("day2.txt");
+static readonly string[] lines = System.IO.File.ReadAllLines("day02.txt");
 
 int x = 0, y = 0;
 

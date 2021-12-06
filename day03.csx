@@ -39,7 +39,7 @@ string gamma = "";
 string epsilon = "";
 
 // Feels clunky doing this as a 2d char array, but I can't find an easy way to get it into int or byte or bools?
-readonly string[] bits = System.IO.File.ReadAllLines("day3.txt").ToArray();
+readonly string[] bits = System.IO.File.ReadAllLines("day03.txt").ToArray();
 
 if (bits.Length == 0)
     return;

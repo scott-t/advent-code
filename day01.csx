@@ -49,7 +49,7 @@ How many measurements are larger than the previous measurement?
 int init = -1;
 int count = 0;
 
-readonly var lines = System.IO.File.ReadAllLines("day1.txt").Select(l => int.Parse(l)).ToArray();
+readonly var lines = System.IO.File.ReadAllLines("day01.txt").Select(l => int.Parse(l)).ToArray();
 
 foreach (var line in lines) {
     if (init >= 0) {
