@@ -11,3 +11,4 @@ dotnet tool install -g dotnet-script
 ./day1.csx
 ```
 
+Yes, some of these answers are... quick, not necessarily elegant.
