@@ -105,12 +105,46 @@ foreach (var draw in drawOrder)
             var sum = boards[i].Where(x => x.Length > 0).Select(x => int.Parse(x)).Sum();
             Console.WriteLine("sum of elements {0}, drawn # {1}, mult = {2}", sum, draw, sum * int.Parse(draw));
             // I'm getting coal for this, aren't I?
-            goto finish;
+            boards[i] = null;
+            drawOrder = drawOrder.SkipWhile(x => x != draw).Skip(1).ToArray();
+            goto pt2;
         }
     }
-
 }
 
-finish:
+pt2:
 
-return;
+/*
+--- Part Two ---
+On the other hand, it might be wise to try a different strategy: let the giant squid win.
+
+You aren't sure how many bingo boards a giant squid could play at once, so rather than waste time counting its arms, the safe thing to do is to figure out which board will win last and choose that one. That way, no matter which boards it picks, it will win for sure.
+
+In the above example, the second board is the last to win, which happens after 13 is eventually called and its middle column is completely marked. If you were to keep playing until this point, the second board would have a sum of unmarked numbers equal to 148 for a final score of 148 * 13 = 1924.
+
+Figure out which board will win last. Once it wins, what would its final score be?
+*/
+
+Console.WriteLine("But we want the squid to win...");
+
+foreach (var draw in drawOrder)
+{
+    for (int i = 0; i < boards.Count; ++i)
+    {
+        if (boards[i] != null)
+        {
+            boards[i] = boards[i].Select(v => v == draw ? "" : v).ToArray();
+            if (isWin(boards[i]))
+            {
+                if (boards.Count(x => x != null) == 1)
+                {
+                    var sum = boards[i].Where(x => x.Length > 0).Select(x => int.Parse(x)).Sum();
+                    Console.WriteLine("sum of elements {0}, drawn # {1}, mult = {2}", sum, draw, sum * int.Parse(draw));
+                    return;
+                }
+                boards[i] = null;
+            }
+        }
+    }
+}
+
