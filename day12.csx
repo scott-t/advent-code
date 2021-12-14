@@ -13,12 +13,6 @@ foreach (var line in rawLines)
     paths[line[1]].Add(line[0]);
 }
 
-var smallCaves = new HashSet<string>();
-foreach (var cave in paths.Keys) {
-    if (cave[0] >= 'a' && cave[0] <= 'z' && cave != "start" && cave != "end")
-        smallCaves.Add(cave);
-}
-
 
 // So this got really messy. The original loop was pretty clean and handled a single visit easily
 // Extension for pt 2 to permit a single re-visit of a small cave was bleh
@@ -30,47 +24,37 @@ foreach (var cave in paths.Keys) {
 // another small cave to repeat, so adding the hashset on debug path string to filter dupes.
 //
 // So this is the 'neatened' version that requires that final hashset
+//
+// Update: rewritten after a night sleep and coming "fresh" after work, works first try
+// Go figure... 🤷‍♂️
 
-void walk(string node, HashSet<string> seen, bool permitDupe, string takenPath, HashSet<string> finalPaths) {
-    takenPath += node + " ";
-    if (node == "end") {
-        //Console.WriteLine(takenPath);
-        finalPaths.Add(takenPath);
-        return;
-    }
-
+int walk(string node, HashSet<string> seen, bool permitDupe) {
+    int pathCount = 0;
     foreach (var path in paths[node]) {
         if (path == "start")
             continue;
-
-        if (!seen.Contains(path)) {
+        else if (path == "end")
+            pathCount++;
+        else if (!seen.Contains(path) || permitDupe) {
             bool isSmall = (path[0] >= 'a' && path[0] <= 'z');
 
             HashSet<string> clone = new HashSet<string>(seen);
-            if (isSmall)
-                clone.Add(path);
-            walk(path, clone, permitDupe, takenPath, finalPaths);
-
-            // Additional branch for the permitted duplicate cave
-            if (isSmall && permitDupe) {
-                clone = new HashSet<string>(seen);
-                walk(path, seen, false, takenPath, finalPaths);
+            bool newDupe = permitDupe;
+            if (isSmall) {
+                if (seen.Contains(path))
+                    newDupe = false;
+                else
+                    clone.Add(path);
             }
-
-
+            pathCount += walk(path, clone, newDupe);
         }
     }
+    return pathCount;
 }
 
-HashSet<string> navPaths = new HashSet<string>();
-walk("start", new HashSet<string>() {"start"}, false, "", navPaths);
+Console.WriteLine("Total paths {0}", walk("start", new HashSet<string>(), false));
 
-Console.WriteLine("Total paths {0}", navPaths.Count);
-
-navPaths.Clear();
- walk("start", new HashSet<string>() {"start"}, true, "", navPaths);
-
-Console.WriteLine("Total paths, single small cave twice {0}", navPaths.Count);
+Console.WriteLine("Total paths, single small cave twice {0}", walk("start", new HashSet<string>(), true));
 
 /**
 --- Day 12: Passage Pathing ---
