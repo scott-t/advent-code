@@ -18,8 +18,31 @@ for (int i = 0; i < 10; ++i) {
 var totals = template.GroupBy(x => x).Select(x => x.Count());
 Console.WriteLine("Element difference after 10 steps {0}", totals.Max() - totals.Min());
 
-// Above algo doesn't scale very well... at 1 byte per element, nearly 21TB of RAM would be needed
-Console.WriteLine("Stuck on Pt 2... ");
+var elementPairs = new Dictionary<string, Int64>();
+template = rawInput.First();
+
+void addElement(Dictionary<string, Int64> dict, string elem, Int64 count) {
+    dict[elem] = dict.GetValueOrDefault(elem) + count;
+}
+
+for (int i = 0; i < template.Length-1; ++i)
+    addElement(elementPairs, template.Substring(i, 2), 1);
+
+for (int i = 0; i < 40; ++i) {
+    var newPolymer = new Dictionary<string, Int64>();
+    foreach (var elem in elementPairs) {
+        addElement(newPolymer, elem.Key.First() + rules[elem.Key], elem.Value);
+        addElement(newPolymer, rules[elem.Key] + elem.Key.Last(), elem.Value);
+    }
+    elementPairs = newPolymer;
+}
+
+
+var elemTotals = new Dictionary<char,Int64>();
+foreach (var elem in elementPairs)
+    elemTotals[elem.Key.First()] = elemTotals.GetValueOrDefault(elem.Key.First()) + elem.Value;
+elemTotals[template.Last()] = elemTotals[template.Last()]+1;
+Console.WriteLine("Element difference after 40 steps {0}", elemTotals.Max(x => x.Value) - elemTotals.Min(x => x.Value));
 
 
 /*
