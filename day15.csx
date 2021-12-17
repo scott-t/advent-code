@@ -33,7 +33,7 @@ struct Path {
         return pathWeight + remainingWeight();
     }
     public int remainingWeight() {
-        return Global.height - thisPoint.X + Global.width - thisPoint.Y;
+        return Global.height + Global.width - 2 - thisPoint.X - thisPoint.Y;
     }
 
     public List<Path> walk() {
@@ -43,9 +43,9 @@ struct Path {
                 continue;
 
             Path p = new Path();
-            p.pathWeight = pathWeight + Global.map[point.X, point.Y];
             p.points = new HashSet<Point>(points);
-            p.points.Add(thisPoint);
+            p.pathWeight = pathWeight + Global.map[point.X, point.Y];
+            p.points.Add(point);
             p.thisPoint = point;
             ret.Add(p);
         }
@@ -59,47 +59,74 @@ struct Path {
             ret.Add(new Point(currentPoint.X, currentPoint.Y+1));
         if (currentPoint.X < Global.width-1)
             ret.Add(new Point(currentPoint.X+1, currentPoint.Y));
-        /*if (currentPoint.X > 0)
+        if (currentPoint.X > 0)
             ret.Add(new Point(currentPoint.X-1, currentPoint.Y));
         if (currentPoint.Y > 0)
-            ret.Add(new Point(currentPoint.X, currentPoint.Y-1));*/
+            ret.Add(new Point(currentPoint.X, currentPoint.Y-1));
         return ret;
     }
 
 }
 
+Path calcRisk() {
+    List<Path> paths = new List<Path>();
+    Path seed = new Path();
+    seed.thisPoint = new Point(0,0);
+    seed.points = new HashSet<Point>();
+    seed.points.Add(seed.thisPoint);
+    seed.pathWeight = 0;
+    paths.Add(seed);
 
-List<Path> paths = new List<Path>();
-Path seed = new Path();
-seed.thisPoint = new Point(0,0);
-seed.points = new HashSet<Point>();
-seed.pathWeight = 0;
-paths.Add(seed);
+    Dictionary<Point, int> seenNodes = new Dictionary<Point, int>();
 
-Path best;
+    Path best;
 
-do {
-    best = paths.OrderBy(p => p.totalWeight()).First();
-    paths.Remove(best);
-    foreach (var path in best.walk()) {
-        var idx = paths.FindIndex(x => x.points.Contains(path.thisPoint) || x.thisPoint == path.thisPoint);
-        // Did we step over an already covered tile, or are we a better result for an existing tile?
-        if (idx < 0 || (paths[idx].pathWeight > path.pathWeight && paths[idx].thisPoint == path.thisPoint))
-        {
-            if (idx >= 0)
-                paths.RemoveAt(idx);
+    do {
+        // Manual loop faster than linq aggregation as we can maintain direct idx/reference to the item we're gonna remove
+        var bestIdx = 0;
+        best = paths[0];
+        for (int i = 1; i < paths.Count; ++i) {
+            if (best.pathWeight > paths[i].pathWeight) {
+                best = paths[i];
+                bestIdx = i;
+            }
+        }
+        paths.RemoveAt(bestIdx);
+        foreach (var path in best.walk()) {
+            if (seenNodes.ContainsKey(path.thisPoint)) {
+                if (seenNodes[path.thisPoint] > path.pathWeight) {
+                    // found better offer
+                    paths.RemoveAll(p => p.points.Contains(path.thisPoint));
+                    seenNodes.Remove(path.thisPoint);
+                }
+                else
+                    continue;
+            }
 
             paths.Add(path);
+            seenNodes.Add(path.thisPoint, path.pathWeight);
         }
-    }
-} while (best.thisPoint.X != (Global.width-1) || best.thisPoint.Y != (Global.height - 1));
+    } while (best.remainingWeight() != 0);
 
-Console.WriteLine("Minimum risk {0}", best.pathWeight);
+    return best;
+}
+
+Console.WriteLine("Minimum risk {0}", calcRisk().pathWeight);
 
 
 map = new int[Global.width*5,Global.height*5];
 
+for (int x = 0; x < Global.width*5; x++) {
+    for (int y = 0; y < Global.height*5; ++y) {
+        map[x,y] = (((Global.map[x%Global.width, y%Global.height] + x/Global.width + y/Global.height) - 1) % 9)+1;
+    }
+}
 
+Global.map = map;
+Global.height *= 5;
+Global.width *= 5;
+
+Console.WriteLine("Extended minimum risk {0}", calcRisk().pathWeight);
 
 /*
 --- Day 15: Chiton ---
