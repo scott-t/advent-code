@@ -114,7 +114,6 @@ class Node {
             Right.AddLeft(val, this);
     }
 
-    // This is modifying in-memory when doing the addition. Not ideal
     public static Node operator+(Node left, Node right) {
         Node ret = new Node(null, new Node(left), new Node(right));
         Node.Reduce(ret);
